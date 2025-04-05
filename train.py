@@ -1,0 +1,108 @@
+from pytorch_lightning import Trainer, seed_everything
+from src.dataloader import DSTDataLoader
+from src.model import BERTAlignModel
+from pytorch_lightning.callbacks import ModelCheckpoint
+from argparse import ArgumentParser
+import os
+
+
+ALL_TRAINING_DATASETS = {
+        ### NLI
+        'xnli': {'task_type': 'nli', 'data_path': 'xnli.json'},
+
+        ### paraphrase
+        'rufact': {'task_type': 'paraphrase', 'data_path': 'rufact.json'},
+
+        ### STS
+        'ru_sts': {'task_type': 'sts', 'data_path': 'ru_sts.json'},
+    }
+
+
+def train(datasets, args):
+    dm = DSTDataLoader(
+        dataset_config=datasets,
+        model_name=args['model_name'],
+        sample_mode='seq',
+        train_batch_size=args['batch_size'],
+        eval_batch_size=16,
+        num_workers=args['num_workers'],
+        train_eval_split=0.95,
+        need_mlm=args['do_mlm']
+    )
+    dm.setup()
+
+    model = BERTAlignModel(model=args['model_name'],
+        using_pretrained=args['use_pretrained_model'],
+        adam_epsilon=args['adam_epsilon'],
+        learning_rate=args['learning_rate'],
+        weight_decay=args['weight_decay'],
+        warmup_steps_portion=args['warm_up_proportion']
+    )
+    model.need_mlm = args['do_mlm']
+
+    training_dataset_used = '_'.join(datasets.keys())
+    checkpoint_name = '_'.join((
+        f"{args['ckpt_comment']}{args['model_name'].replace('/', '-')}",
+        f"{'scratch_' if not args['use_pretrained_model'] else ''}{'no_mlm_' if not args['do_mlm'] else ''}{training_dataset_used}",
+        str(args['max_samples_per_dataset']),
+        f"{args['batch_size']}x{len(args['devices'])}x{args['accumulate_grad_batch']}"
+    ))
+
+    checkpoint_callback = ModelCheckpoint(
+        dirpath=args['ckpt_save_path'],
+        filename=checkpoint_name + "_{epoch:02d}_{step}",
+        every_n_train_steps=10000,
+        save_top_k=1
+    )
+    trainer = Trainer(
+        accelerator="gpu",
+        max_epochs=args['num_epoch'],
+        #devices=args['devices'],
+        strategy= "auto", #"ddp_notebook",
+        precision=16,
+        callbacks=[checkpoint_callback],
+        accumulate_grad_batches=args['accumulate_grad_batch']
+    )
+
+    trainer.fit(model, datamodule=dm)
+    trainer.save_checkpoint(os.path.join(args['ckpt_save_path'], f"{checkpoint_name}_final.ckpt"))
+
+    print("Training is finished.")
+
+
+if __name__ == "__main__":
+    if not os.path.exists('ckpt'):
+        os.makedirs('ckpt')
+    args = {}
+    args['seed']=2025
+    args['batch_size']=12
+    args['accumulate_grad_batch']=1
+    args['num_epoch']=3
+    args['num_workers']=8
+    args['warm_up_proportion']=0.06
+    args['adam_epsilon']=1e-6
+    args['weight_decay']=0.1
+    args['learning_rate']=1e-5
+    args['val_check_interval']=1. /4
+    args['devices']=[0]
+    args['model_name']='DeepPavlov/rubert-base-cased'
+    args['ckpt_save_path']='./ckpt'
+    args['ckpt_comment']=""
+    args['trainin_datasets']=list(ALL_TRAINING_DATASETS.keys())
+    args['data_path']='./data/training'
+    args['max_samples_per_dataset']=500000
+    args['do_mlm']=False
+    args['use_pretrained_model']=True
+
+    seed_everything(args['seed'])
+
+    datasets = {
+        name: {
+            **ALL_TRAINING_DATASETS[name],
+            "size": args['max_samples_per_dataset'],
+            "data_path": os.path.join(args['data_path'], ALL_TRAINING_DATASETS[name]['data_path'])
+        }
+        for name in args['trainin_datasets']
+    }
+    
+    train(datasets, args)
