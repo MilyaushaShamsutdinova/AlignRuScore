@@ -3,6 +3,7 @@ from src.dataloader import DSTDataLoader
 from src.model import BERTAlignModel
 from pytorch_lightning.callbacks import ModelCheckpoint
 from argparse import ArgumentParser
+from tqdm import tqdm
 import os
 import torch
 from pathlib import Path
@@ -57,11 +58,13 @@ def train(datasets, args):
     model.need_mlm = args['do_mlm']
 
     training_dataset_used = '_'.join(datasets.keys())
+    n_devices = args["devices"] if isinstance(args["devices"], int) else len(args["devices"])
+    batch_string = f"{args['batch_size']}x{n_devices}x{args['accumulate_grad_batch']}"
     checkpoint_name = '_'.join((
         f"{args['ckpt_comment']}{args['model_name'].replace('/', '-')}",
         f"{'scratch_' if not args['use_pretrained_model'] else ''}{'no_mlm_' if not args['do_mlm'] else ''}{training_dataset_used}",
         str(args['max_samples_per_dataset']),
-        f"{args['batch_size']}x{len(args['devices'])}x{args['accumulate_grad_batch']}"
+        batch_string
     ))
 
     checkpoint_callback = ModelCheckpoint(
@@ -71,11 +74,11 @@ def train(datasets, args):
         save_top_k=1
     )
     trainer = Trainer(
-        accelerator="gpu",
+        accelerator=args['accelerator'],
+        devices=args['devices'],
+        strategy=args['strategy'],
         max_epochs=args['num_epoch'],
-        #devices=args['devices'],
-        strategy= "auto", #"ddp_notebook",
-        precision=16,
+        precision=16 if args['accelerator'] == 'gpu' else 16,
         callbacks=[checkpoint_callback],
         accumulate_grad_batches=args['accumulate_grad_batch']
     )
@@ -86,7 +89,7 @@ def train(datasets, args):
     print("Training is finished.")
 
 
-if __name__ == "__main__":
+def main():
     if not os.path.exists('ckpt'):
         os.makedirs('ckpt')
     args = {}
@@ -101,8 +104,8 @@ if __name__ == "__main__":
     args['learning_rate']=1e-5
     args['val_check_interval']=1. /4
     args['accelerator']='gpu' if torch.cuda.is_available() else 'cpu'
-    args['devices']=[0] if torch.cuda.is_available() else None
-    args['strategy']='ddp' if torch.cuda.is_available() else None
+    args['devices']=[0] if torch.cuda.is_available() else 1
+    args['strategy']='ddp' if torch.cuda.is_available() else 'auto'
     args['model_name']='DeepPavlov/rubert-base-cased'
     args['ckpt_save_path']='ckpt'
     args['ckpt_comment']=""
@@ -124,3 +127,7 @@ if __name__ == "__main__":
     }
     
     train(datasets, args)
+
+if __name__ == "__main__":
+    main()
+    
