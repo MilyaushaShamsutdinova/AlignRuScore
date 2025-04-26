@@ -4,17 +4,33 @@ from src.model import BERTAlignModel
 from pytorch_lightning.callbacks import ModelCheckpoint
 from argparse import ArgumentParser
 import os
-
+import torch
+from pathlib import Path
 
 ALL_TRAINING_DATASETS = {
         ### NLI
-        'xnli': {'task_type': 'nli', 'data_path': 'xnli.json'},
+        'snli': {'task_type': 'nli', 'data_path': 'snli.json'},
+        'anli': {'task_type': 'nli', 'data_path': 'anli.json'},
+        'doc_nli': {'task_type': 'nli', 'data_path': 'doc_nli.json'},
+        'multi_nli': {'task_type': 'nli', 'data_path': 'multi_nli.json'},
+
+        ### fact checking
+        'nli_fever': {'task_type': 'fact_checking', 'data_path': 'nli_fever.json'},
+        'vitaminc' : {'task_type': 'fact_checking', 'data_path': 'vitaminc.json'},
+
+        ### QA
+        'race': {'task_type': 'qa', 'data_path': 'race.json'},
+        'ms_marco': {'task_type': 'qa', 'data_path': 'ms_marco.json'},
+
 
         ### paraphrase
         'rufact': {'task_type': 'paraphrase', 'data_path': 'rufact.json'},
+        'qqp': {'task_type': 'paraphrase', 'data_path': 'qqp.json'},
+        'paws': {'task_type': 'paraphrase', 'data_path': 'paws.json'},
 
         ### STS
         'ru_sts': {'task_type': 'sts', 'data_path': 'ru_sts.json'},
+        'sick': {'task_type': 'sts', 'data_path': 'sick.json'},
     }
 
 
@@ -77,19 +93,21 @@ if __name__ == "__main__":
     args['seed']=2025
     args['batch_size']=12
     args['accumulate_grad_batch']=1
-    args['num_epoch']=3
+    args['num_epoch']=1
     args['num_workers']=8
     args['warm_up_proportion']=0.06
     args['adam_epsilon']=1e-6
     args['weight_decay']=0.1
     args['learning_rate']=1e-5
     args['val_check_interval']=1. /4
-    args['devices']=[0]
+    args['accelerator']='gpu' if torch.cuda.is_available() else 'cpu'
+    args['devices']=[0] if torch.cuda.is_available() else None
+    args['strategy']='ddp' if torch.cuda.is_available() else None
     args['model_name']='DeepPavlov/rubert-base-cased'
-    args['ckpt_save_path']='./ckpt'
+    args['ckpt_save_path']='ckpt'
     args['ckpt_comment']=""
     args['trainin_datasets']=list(ALL_TRAINING_DATASETS.keys())
-    args['data_path']='./data/training'
+    args['data_path']='data/training'
     args['max_samples_per_dataset']=500000
     args['do_mlm']=False
     args['use_pretrained_model']=True
@@ -100,9 +118,9 @@ if __name__ == "__main__":
         name: {
             **ALL_TRAINING_DATASETS[name],
             "size": args['max_samples_per_dataset'],
-            "data_path": os.path.join(args['data_path'], ALL_TRAINING_DATASETS[name]['data_path'])
+            "data_path": Path(args['data_path']) / ALL_TRAINING_DATASETS[name]['data_path']
         }
-        for name in args['trainin_datasets']
+        for name in tqdm(args['trainin_datasets'], desc='Loading datasets')
     }
     
     train(datasets, args)
