@@ -1,1 +1,1 @@
-from AlignScore import AlignScore
+from .AlignScore import AlignScore
