@@ -14,15 +14,37 @@ from random import sample
 
 
 DATASET_HUGGINGFACE = {
-    'xnli': ['MilyaShams/xnli_ru_en_10k', 'ru'],
-    'ru_sts': ['ai-forever/ru-stsbenchmark-sts', 'train'],
+    'snli': ['MilyaShams/snli-ru_10k', 'train'],
     'rufact':['akozlova/RuFacts', 'train'],
+    'multi_nli': ['MilyaShams/multi_nli-ru_10k', 'train'],
+    'anli': ['MilyaShams/anli-ru_10k', 'train'],
+    'nli_fever': ['MilyaShams/nli_fever-ru_10k', 'train'],
+    'vitaminc':['MilyaShams/vitaminc-ru_10k', 'train'],
+    'doc_nli':['MilyaShams/doc_nli-ru_10k', 'train'],
+    'qqp':['MilyaShams/qqp-ru_10k', 'train'],
+    'ru_sts':['MilyaShams/ru-stsbenchmark-sts','train'],
+    'sberquad':['MilyaShams/sberquad_10k', 'train'],
+    'paws':['MilyaShams/paws-ru_10k', 'train'],
+    'sick':['MilyaShams/sick-ru', 'train'],
+    'race':['MilyaShams/race-ru_10k', 'train'],
+    'ms_marco':['MilyaShams/ms_marco-ru_10k', 'train'],
+    'ru_sts':['MilyaShams/ru-stsbenchmark-sts', 'train'],
 }
 
 DATASET_CONFIG = {
-    'xnli': {'task': 'nli', 'text_a': 'premise', 'text_b': 'hypothesis', 'label': 'label', 'huggingface': True},
-    'ru_sts': {'task': 'sts', 'text_a': 'sentence1', 'text_b': 'sentence2', 'label': 'score', 'huggingface': True},
+    'snli': {'task': 'nli', 'text_a': 'premise', 'text_b': 'hypothesis', 'label': 'label', 'huggingface': True},
     'rufact': {'task': 'paraphrase', 'text_a': 'evidence', 'text_b': 'claim', 'label': 'label', 'huggingface':True},
+    'multi_nli': {'task': 'nli', 'text_a': 'premise', 'text_b': 'hypothesis', 'label': 'label', 'huggingface': True},
+    'anli': {'task': 'nli', 'text_a': 'premise', 'text_b': 'hypothesis', 'label': 'label', 'huggingface': True},
+    'nli_fever': {'task': 'nli', 'text_a': 'premise', 'text_b': 'hypothesis', 'label': 'label', 'huggingface': True},
+    'vitaminc': {'task': 'paraphrase', 'text_a': 'evidence', 'text_b': 'claim', 'label': 'label', 'huggingface':True},
+    'doc_nli': {'task': 'nli', 'text_a': 'premise', 'text_b': 'hypothesis', 'label': 'label', 'huggingface': True},
+    'qqp': {'task': 'paraphrase', 'text_a': 'text1', 'text_b': 'text2', 'label': 'label', 'huggingface': True},
+    'paws': {'task': 'paraphrase', 'text_a': 'sentence1', 'text_b': 'sentence2', 'label': 'label', 'huggingface': True},
+    'sick': {'task': 'similarity', 'text_a': 'sentence_A', 'text_b': 'sentence_B', 'label': 'relatedness_score', 'huggingface': True},
+    'race': {'task': 'nli', 'text_a': 'article', 'text_b': ['question', 'options'], 'label': 'answer', 'huggingface': True}, #TODO: check
+    'ms_marco': {'task': 'paraphrase', 'text_a': 'question', 'text_b': 'passage', 'label': 'label', 'huggingface': True},
+    'ru_sts': {'task': 'similarity', 'text_a': 'sentence1', 'text_b': 'sentence2', 'label': 'score', 'huggingface': True},
 }
 
 class QA2D():
@@ -196,16 +218,22 @@ class ExtractiveSummarizationGenerator():
 
 
 class DataGenerator():
-    def __init__(self, dataset_names) -> None:
+    def __init__(self, dataset_names, device = None) -> None:
         self.dataset_names = dataset_names
         self.datasets = dict()
         self.t5_qa = None
         self.t5_tokenizer = None
+        if device is None:
+            self.device = 'cuda' if torch.cuda.is_available() else 'cpu'
+        else:
+            self.device = device
 
         self.load_dataset_from_huggingface()
 
     def load_dataset_from_huggingface(self):
-        for each_dataset in self.dataset_names:
+        bar = tqdm(self.dataset_names, desc="Loading datasets")
+        for each_dataset in bar:
+            bar.set_description(f"Loading {each_dataset}")
             if DATASET_CONFIG[each_dataset].get('huggingface'):
                 self.datasets[each_dataset] = load_dataset(
                     *DATASET_HUGGINGFACE[each_dataset][:-1],trust_remote_code=True)[DATASET_HUGGINGFACE[each_dataset][-1]]
@@ -313,13 +341,13 @@ class DataGenerator():
 
         return outputs
 
-    def process_xnli(self):
+    def process_snli(self):
         output = []
-        for example in tqdm(self.datasets['xnli'], desc=f'Constructing xnli'):
-            text_a = example[DATASET_CONFIG['xnli']['text_a']]
-            text_b = [example[DATASET_CONFIG['xnli']['text_b']]]
+        for example in tqdm(self.datasets['snli'], desc=f'Constructing snli'):
+            text_a = example[DATASET_CONFIG['snli']['text_a']]
+            text_b = [example[DATASET_CONFIG['snli']['text_b']]]
             text_c = []
-            label = example[DATASET_CONFIG['xnli']['label']]
+            label = example[DATASET_CONFIG['snli']['label']]
             output.append({
                 'text_a': text_a,
                 'text_b': text_b,
@@ -329,6 +357,126 @@ class DataGenerator():
 
         return output
 
+    def process_anli(self):
+        output = []
+        for example in tqdm(self.datasets['anli'], desc=f'Constructing anli'):
+            text_a = example[DATASET_CONFIG['anli']['text_a']]
+            text_b = [example[DATASET_CONFIG['anli']['text_b']]]
+            text_c = []
+            label = example[DATASET_CONFIG['anli']['label']]
+            output.append({
+                'text_a': text_a,
+                'text_b': text_b,
+                'text_c': text_c,
+                'label': label
+            })
+        return output
+    
+    def process_nli_fever(self):
+        output = []
+        for example in tqdm(self.datasets['nli_fever'], desc=f'Constructing nli_fever'):
+            text_a = example[DATASET_CONFIG['nli_fever']['text_a']]
+            text_b = [example[DATASET_CONFIG['nli_fever']['text_b']]]
+            text_c = []
+            label = example[DATASET_CONFIG['nli_fever']['label']]
+            output.append({
+                'text_a': text_a,
+                'text_b': text_b,
+                'text_c': text_c,
+                'label': label
+            })
+        return output
+        
+    def process_sick(self):
+        output = []
+        for example in tqdm(self.datasets['sick'], desc=f'Constructing sick'):
+            text_a = example[DATASET_CONFIG['sick']['text_a']]
+            text_b = [example[DATASET_CONFIG['sick']['text_b']]]
+            text_c = []
+            label = example[DATASET_CONFIG['sick']['label']]
+            output.append({
+                'text_a': text_a,
+                'text_b': text_b,
+                'text_c': text_c,
+                'label': label
+            })
+        return output
+
+    def process_multi_nli(self):
+        output = []
+        for example in tqdm(self.datasets['multi_nli'], desc=f'Constructing multi_nli'):
+            text_a = example[DATASET_CONFIG['multi_nli']['text_a']]
+            text_b = [example[DATASET_CONFIG['multi_nli']['text_b']]]
+            text_c = []
+            label = example[DATASET_CONFIG['multi_nli']['label']]
+            output.append({
+                'text_a': text_a,
+                'text_b': text_b,
+                'text_c': text_c,
+                'label': label
+            })
+        return output
+
+    def process_vitaminc(self):
+        output = []
+        for example in tqdm(self.datasets['vitaminc'], desc=f'Constructing vitaminc'):
+            text_a = example[DATASET_CONFIG['vitaminc']['text_a']]
+            text_b = [example[DATASET_CONFIG['vitaminc']['text_b']]]
+            text_c = []
+            label = example[DATASET_CONFIG['vitaminc']['label']]
+            output.append({
+                'text_a': text_a,
+                'text_b': text_b,
+                'text_c': text_c,
+                'label': label
+            })
+        return output
+    
+    def process_doc_nli(self):
+        output = []
+        for example in tqdm(self.datasets['doc_nli'], desc=f'Constructing doc_nli'):
+            text_a = example[DATASET_CONFIG['doc_nli']['text_a']]
+            text_b = [example[DATASET_CONFIG['doc_nli']['text_b']]]
+            text_c = []
+            label = example[DATASET_CONFIG['doc_nli']['label']]
+            output.append({
+                'text_a': text_a,
+                'text_b': text_b,
+                'text_c': text_c,
+                'label': label
+            })
+        return output
+    
+    def process_qqp(self):
+        output = []
+        for example in tqdm(self.datasets['qqp'], desc=f'Constructing qqp'):
+            text_a = example[DATASET_CONFIG['qqp']['text_a']]
+            text_b = [example[DATASET_CONFIG['qqp']['text_b']]]
+            text_c = []
+            label = example[DATASET_CONFIG['qqp']['label']]
+            output.append({
+                'text_a': text_a,
+                'text_b': text_b,
+                'text_c': text_c,
+                'label': label
+            })
+        return output
+    
+    def process_paws(self):
+        output = []
+        for example in tqdm(self.datasets['paws'], desc=f'Constructing paws'):
+            text_a = example[DATASET_CONFIG['paws']['text_a']]
+            text_b = [example[DATASET_CONFIG['paws']['text_b']]]
+            text_c = []
+            label = example[DATASET_CONFIG['paws']['label']]
+            output.append({
+                'text_a': text_a,
+                'text_b': text_b,
+                'text_c': text_c,
+                'label': label
+            })
+        return output
+    
     def process_rufact(self):
         output = []
         for example in tqdm(self.datasets['rufact'], desc=f'Constructing rufact'):
@@ -359,6 +507,104 @@ class DataGenerator():
                 'label': label
             })
         return output
+    
+    def process_ms_marco(self):
+        qa2d_generator = QA2D(batch_size=32, device=self.device)
+        output = []
+        correct_contexts = []
+        correct_questions = []
+        correct_answers = []
+
+        wrong_contexts = []
+        wrong_questions = []
+        wrong_answers = []
+
+        filtered_examples = []
+        questions = []
+        answers = []
+        declaratives = []
+
+        for example in tqdm(self.datasets['ms_marco'], desc=f'Collecting msmarco'):
+            if sum(example['passages']['is_selected']) > 0:  # has answer
+                questions.append(example['query'])
+                if 'wellFormedAnswers' not in example.keys() or len(example['wellFormedAnswers']) == 0:
+                    answers.append(example['answers'][0])
+                else:
+                    answers.append(example['wellFormedAnswers'][0])
+                filtered_examples.append(example)
+        
+        for example in filtered_examples:
+            for i, is_selected in enumerate(example['passages']['is_selected']):
+                if is_selected == 1:
+                    output.append({
+                        'text_a': example['passages']['passage_text'][i],
+                        'text_b': [example['query']],
+                        'text_c': [],
+                        'label': 1
+                    })
+                else:
+                    output.append({
+                        'text_a': example['passages']['passage_text'][i],
+                        'text_b': [example['query']],
+                        'text_c': [],
+                        'label': 0
+                    })
+        return output
+    
+    def process_race(self):
+        qa2d_generator = QA2D(batch_size=32, device=self.device)
+        option_dict = {'A': 0, 'B': 1, 'C': 2, 'D': 3}
+        output = []
+
+        correct_context = []
+        correct_question = []
+        correct_answer = []
+
+        wrong_context = []
+        wrong_question = []
+        wrong_answer = []
+
+        for example in tqdm(self.datasets['race'], desc=f'Constructing race'):
+            text_a = example[DATASET_CONFIG['race']['text_a']]
+            label = -1
+            question = example[DATASET_CONFIG['race']['text_b'][0]]
+            if "_" in question:
+                answer_id = option_dict[example[DATASET_CONFIG['race']['label']]]
+                for i, options in enumerate(example[DATASET_CONFIG['race']['text_b'][1]]):
+                    if i == answer_id:
+                        output.append({
+                            'text_a': text_a,
+                            'text_b': [' '.join(question.replace("_", " "+options+" ").split())],
+                            'text_c': [],
+                            'label': 1
+                        })
+                    else:
+                        output.append({
+                            'text_a': text_a,
+                            'text_b': [' '.join(question.replace("_", " "+options+" ").split())],
+                            'text_c': [],
+                            'label': 0
+                        })
+            else:
+                answer_id = option_dict[example[DATASET_CONFIG['race']['label']]]
+                for i, options in enumerate(example[DATASET_CONFIG['race']['text_b'][1]]):
+                    if i == answer_id:
+                        output.append({
+                                'text_a': text_a,
+                                'text_b': [question],
+                                'text_c': [options],
+                                'label': 1
+                            })
+                    else:
+                        output.append({
+                                'text_a': text_a,
+                                'text_b': [question],
+                                'text_c': [options],
+                                'label': 0
+                            })
+
+        return output
+
 
     def generate(self):
         if not os.path.exists('./data/training'):
