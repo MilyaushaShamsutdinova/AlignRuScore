@@ -433,6 +433,7 @@ class DataGenerator():
         return output
     
     def process_doc_nli(self):
+        label_map = {'entailment':0, 'not_entailment':2}
         output = []
         for example in tqdm(self.datasets['doc_nli'], desc=f'Constructing doc_nli'):
             text_a = example[DATASET_CONFIG['doc_nli']['text_a']]
@@ -443,7 +444,7 @@ class DataGenerator():
                 'text_a': text_a,
                 'text_b': text_b,
                 'text_c': text_c,
-                'label': label
+                'label': label_map[label]
             })
         return output
     
