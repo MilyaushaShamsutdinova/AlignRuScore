@@ -36,7 +36,7 @@ DATASET_CONFIG = {
     'rufact': {'task': 'paraphrase', 'text_a': 'evidence', 'text_b': 'claim', 'label': 'label', 'huggingface':True},
     'multi_nli': {'task': 'nli', 'text_a': 'premise', 'text_b': 'hypothesis', 'label': 'label', 'huggingface': True},
     'anli': {'task': 'nli', 'text_a': 'premise', 'text_b': 'hypothesis', 'label': 'label', 'huggingface': True},
-    'nli_fever': {'task': 'fact_checking', 'text_a': 'premise', 'text_b': 'hypothesis', 'label': 'label', 'huggingface': True},
+    'nli_fever': {'task': 'fact_checking', 'text_a': 'hypothesis', 'text_b': 'premise', 'label': 'label', 'huggingface': True},
     'vitaminc': {'task': 'fact_checking', 'text_a': 'evidence', 'text_b': 'claim', 'label': 'label', 'huggingface':True},
     'doc_nli': {'task': 'bin_nli', 'text_a': 'premise', 'text_b': 'hypothesis', 'label': 'label', 'huggingface': True},
     'qqp': {'task': 'paraphrase', 'text_a': 'text1', 'text_b': 'text2', 'label': 'label', 'huggingface': True},
