@@ -12,7 +12,7 @@ ALL_TRAINING_DATASETS = {
         ### NLI
         'snli': {'task_type': 'nli', 'data_path': 'snli.json'},
         'anli': {'task_type': 'nli', 'data_path': 'anli.json'},
-        'doc_nli': {'task_type': 'nli', 'data_path': 'doc_nli.json'},
+        'doc_nli': {'task_type': 'bin_nli', 'data_path': 'doc_nli.json'},
         'multi_nli': {'task_type': 'nli', 'data_path': 'multi_nli.json'},
 
         ### fact checking
@@ -105,7 +105,7 @@ def main():
     args['val_check_interval']=1. /4
     args['accelerator']='gpu' if torch.cuda.is_available() else 'cpu'
     args['devices']=[0] if torch.cuda.is_available() else 1
-    args['strategy']='ddp' if torch.cuda.is_available() else 'auto'
+    args['strategy']='auto'
     args['model_name']='DeepPavlov/rubert-base-cased'
     args['ckpt_save_path']='ckpt'
     args['ckpt_comment']=""

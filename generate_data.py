@@ -36,15 +36,15 @@ DATASET_CONFIG = {
     'rufact': {'task': 'paraphrase', 'text_a': 'evidence', 'text_b': 'claim', 'label': 'label', 'huggingface':True},
     'multi_nli': {'task': 'nli', 'text_a': 'premise', 'text_b': 'hypothesis', 'label': 'label', 'huggingface': True},
     'anli': {'task': 'nli', 'text_a': 'premise', 'text_b': 'hypothesis', 'label': 'label', 'huggingface': True},
-    'nli_fever': {'task': 'nli', 'text_a': 'premise', 'text_b': 'hypothesis', 'label': 'label', 'huggingface': True},
-    'vitaminc': {'task': 'paraphrase', 'text_a': 'evidence', 'text_b': 'claim', 'label': 'label', 'huggingface':True},
-    'doc_nli': {'task': 'nli', 'text_a': 'premise', 'text_b': 'hypothesis', 'label': 'label', 'huggingface': True},
+    'nli_fever': {'task': 'fact_checking', 'text_a': 'premise', 'text_b': 'hypothesis', 'label': 'label', 'huggingface': True},
+    'vitaminc': {'task': 'fact_checking', 'text_a': 'evidence', 'text_b': 'claim', 'label': 'label', 'huggingface':True},
+    'doc_nli': {'task': 'bin_nli', 'text_a': 'premise', 'text_b': 'hypothesis', 'label': 'label', 'huggingface': True},
     'qqp': {'task': 'paraphrase', 'text_a': 'text1', 'text_b': 'text2', 'label': 'label', 'huggingface': True},
     'paws': {'task': 'paraphrase', 'text_a': 'sentence1', 'text_b': 'sentence2', 'label': 'label', 'huggingface': True},
-    'sick': {'task': 'similarity', 'text_a': 'sentence_A', 'text_b': 'sentence_B', 'label': 'relatedness_score', 'huggingface': True},
-    'race': {'task': 'nli', 'text_a': 'article', 'text_b': ['question', 'options'], 'label': 'answer', 'huggingface': True}, #TODO: check
-    'ms_marco': {'task': 'paraphrase', 'text_a': 'question', 'text_b': 'passage', 'label': 'label', 'huggingface': True},
-    'ru_sts': {'task': 'similarity', 'text_a': 'sentence1', 'text_b': 'sentence2', 'label': 'score', 'huggingface': True},
+    'sick': {'task': 'sts', 'text_a': 'sentence_A', 'text_b': 'sentence_B', 'label': 'relatedness_score', 'huggingface': True},
+    'race': {'task': 'qa', 'text_a': 'article', 'text_b': ['question', 'options'], 'label': 'answer', 'huggingface': True}, #TODO: check
+    'ms_marco': {'task': 'qa', 'text_a': 'question', 'text_b': 'passage', 'label': 'label', 'huggingface': True},
+    'ru_sts': {'task': 'sts', 'text_a': 'sentence1', 'text_b': 'sentence2', 'label': 'score', 'huggingface': True},
 }
 
 class QA2D():

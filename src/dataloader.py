@@ -124,15 +124,20 @@ class DSTDataSet(Dataset):
             logging.warning('text_b too long...')
             tokenized_pair = self.tokenizer(text_a, text_b, padding='max_length', max_length=self.tokenizer_max_length, truncation=True)
         input_ids, mlm_labels = self.random_word(tokenized_pair['input_ids'])
-        return (
-            torch.tensor(input_ids), 
-            torch.tensor(tokenized_pair['attention_mask']), 
-            torch.tensor(tokenized_pair['token_type_ids']) if 'token_type_ids' in tokenized_pair.keys() else None, 
-            torch.tensor(label), # align label, 2 class
-            torch.tensor(mlm_labels), # mlm label
-            torch.tensor(-100), # tri label, 3 class
-            torch.tensor(-100.0) # reg label, float
-        )
+        try:
+          return (
+              torch.tensor(input_ids), 
+              torch.tensor(tokenized_pair['attention_mask']), 
+              torch.tensor(tokenized_pair['token_type_ids']) if 'token_type_ids' in tokenized_pair.keys() else None, 
+              torch.tensor(label), # align label, 2 class
+              torch.tensor(mlm_labels), # mlm label
+              torch.tensor(-100), # tri label, 3 class
+              torch.tensor(-100.0) # reg label, float
+          )
+        except TypeError as e:
+          raise NameError('Error during processing paraphrase: {error} \n\n text_a = {text_a} \n text_b = {text_b} \n label = {label}'.format(
+            error = e, text_a = text_a , text_b = text_b, label = label
+          ))
     
     def process_qa(self, index):
         text_a = self.dataset[index]['text_a']
@@ -454,27 +459,29 @@ class DSTDataSet(Dataset):
 
         if self.dataset[index]['task'] == 'wmt':
             input_ids, attention_mask, token_type_ids, align_label, mlm_labels, tri_label, reg_label = self.process_wmt(index)
-
-        if token_type_ids is not None:
-            return {
-                'input_ids': input_ids,
-                'attention_mask': attention_mask,
-                'token_type_ids': token_type_ids,
-                'align_label': align_label,
-                'mlm_label': mlm_labels,
-                'tri_label': tri_label,
-                'reg_label': reg_label
-            }
-        else:
-            return {
-                'input_ids': input_ids,
-                'attention_mask': attention_mask,
-                'align_label': align_label,
-                'mlm_label': mlm_labels,
-                'tri_label': tri_label,
-                'reg_label': reg_label
-            }
         
+        try:
+          if token_type_ids is not None:
+              return {
+                  'input_ids': input_ids,
+                  'attention_mask': attention_mask,
+                  'token_type_ids': token_type_ids,
+                  'align_label': align_label,
+                  'mlm_label': mlm_labels,
+                  'tri_label': tri_label,
+                  'reg_label': reg_label
+              }
+          else:
+              return {
+                  'input_ids': input_ids,
+                  'attention_mask': attention_mask,
+                  'align_label': align_label,
+                  'mlm_label': mlm_labels,
+                  'tri_label': tri_label,
+                  'reg_label': reg_label
+              }
+        except UnboundLocalError as e:
+          raise NameError('Error during processing {dataset} with task={task}. Error: {error}'.format(dataset = index, task = self.dataset[index]['task'],error=e))      
 
     def __len__(self):
         return len(self.dataset)
