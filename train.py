@@ -111,7 +111,7 @@ def main():
     args['ckpt_comment']=""
     args['trainin_datasets']=list(ALL_TRAINING_DATASETS.keys())
     args['data_path']='data/training'
-    args['max_samples_per_dataset']=500000
+    args['max_samples_per_dataset']=10000
     args['do_mlm']=False
     args['use_pretrained_model']=True
 
