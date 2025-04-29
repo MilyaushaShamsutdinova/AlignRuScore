@@ -418,6 +418,7 @@ class DataGenerator():
         return output
 
     def process_vitaminc(self):
+        label_map = {'SUPPORTS':0, 'NOT ENOUGH INFO':1, 'REFUTES':2}
         output = []
         for example in tqdm(self.datasets['vitaminc'], desc=f'Constructing vitaminc'):
             text_a = example[DATASET_CONFIG['vitaminc']['text_a']]
@@ -428,12 +429,12 @@ class DataGenerator():
                 'text_a': text_a,
                 'text_b': text_b,
                 'text_c': text_c,
-                'label': label
+                'label': label_map[label]
             })
         return output
     
     def process_doc_nli(self):
-        label_map = {'entailment':0, 'not_entailment':2}
+        label_map = {'entailment':0, 'not_entailment':1}
         output = []
         for example in tqdm(self.datasets['doc_nli'], desc=f'Constructing doc_nli'):
             text_a = example[DATASET_CONFIG['doc_nli']['text_a']]
