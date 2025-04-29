@@ -608,11 +608,11 @@ class DataGenerator():
         return output
 
 
-    def generate(self):
-        if not os.path.exists('./data/training'):
-            os.makedirs('./data/training')
+    def generate(self,path:str = './data/training'):
+        if not os.path.exists(path):
+            os.makedirs(path)
         for each_dataset in self.datasets:
-            with open(f'./data/training/{each_dataset}.json', 'w', encoding='utf8') as outfile:
+            with open(f'{path}/{each_dataset}.json', 'w', encoding='utf8') as outfile:
                 outfile.write("")
         for each_dataset in self.datasets:
             outputs = eval(f'self.process_{each_dataset}()')
@@ -628,7 +628,7 @@ class DataGenerator():
                     # original label, if -1 only has positive pairs and negative pairs
                     'orig_label': each_output['label']
                 }
-                with open(f'./data/training/{each_dataset}.json', 'a', encoding='utf8') as outfile:
+                with open(f'{path}/{each_dataset}.json', 'a', encoding='utf8') as outfile:
                     json.dump(dict_write_to_file, outfile, ensure_ascii=False)
                     outfile.write('\n')
 
