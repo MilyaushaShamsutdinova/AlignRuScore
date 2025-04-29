@@ -96,7 +96,7 @@ def main():
     args['seed']=2025
     args['batch_size']=12
     args['accumulate_grad_batch']=1
-    args['num_epoch']=1
+    args['num_epoch']=3
     args['num_workers']=8
     args['warm_up_proportion']=0.06
     args['adam_epsilon']=1e-6
