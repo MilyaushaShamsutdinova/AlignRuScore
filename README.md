@@ -12,14 +12,11 @@ Ensuring factual consistency in generated text is crucial for reliable natural l
 
 AlignScore is a metric for evaluating the factual consistency of generated text by assessing the alignment of information between a claim and its context. It uses a unified text-to-text information alignment function, trained on a diverse set of data sources from various NLP tasks, to estimate an alignment score.
 
-*(Consider adding the diagram from slide 3 of your presentation here, illustrating the unified alignment function concept)*
-`![AlignScore Main Idea Diagram](path_to_your_image_slide_3.png)`
-![AlignScore Main Idea Diagram](path_to_your_image_slide_3.png)
+![AlignScore Main Idea Diagram](https://github.com/MilyaushaShamsutdinova/AlignRuScore/blob/russian-adaptation/assets/alignscore_1.png?raw=true)
 
 AlignScore handles long texts by splitting the context into coarse-grained chunks (approx. 350 tokens) and the claim into fine-grained sentences. It then aggregates the alignment scores between context-chunks and claim-sentences to produce a final factual consistency score.
 
-*(Consider adding the diagram from slide 4 of your presentation here, illustrating context/claim splitting)*
-`![AlignScore Context/Claim Splitting Diagram](path_to_your_image_slide_4.png)`
+![AlignScore Main Idea Diagram](https://github.com/MilyaushaShamsutdinova/AlignRuScore/blob/russian-adaptation/assets/alignscore_2.png?raw=true)
 
 ## AlignRuScore: Methodology
 
@@ -33,20 +30,19 @@ We constructed a diverse Russian training corpus by:
     *   **RuSTS Benchmark**: For semantic textual similarity.
 The final unified corpus comprises over 118,900 training examples.
 
+![datasets](https://github.com/MilyaushaShamsutdinova/AlignRuScore/blob/russian-adaptation/assets/datasets.png?raw=true)
+
 ### 2. Model Training
 *   **Base Model**: RuBERT-base (180M parameters).
 *   **Training Approach**: Unified multi-task learning with task-specific heads for:
     *   3-way classification (ALIGNED, CONTRADICT, NEUTRAL)
     *   Binary classification (ALIGNED or NOT-ALIGNED)
     *   Regression (similarity score between 0 and 1)
-*   **Key Hyperparameters**:
-    *   Optimizer: AdamW
-    *   Learning Rate: 1e-5
-    *   Batch Size: 12
-    *   Epochs: 3
-    *   GPU: 1/4 A100 (Training time ~3.5 hours)
 
-A small feed-forward network is trained for each task type simultaneously, allowing the embedding space and heads to handle alignment for all NLP alignment tasks.
+A small feed-forward network is trained for each task type simultaneously, allowing the embedding space and heads to handle alignment for all NLP alignment tasks. 
+
+Here is **hyperparameters** we used for training:
+![hp](https://github.com/MilyaushaShamsutdinova/AlignRuScore/blob/russian-adaptation/assets/hyperparameters.png?raw=true)
 
 ## Key Results
 
@@ -54,32 +50,23 @@ AlignRuScore was evaluated on held-out test portions of Russian datasets.
 
 ### Classification Tasks:
 *   **3-Way Classification (Entailment, Fact Verification):**
-    *   SNLI: F1 = 0.743, Accuracy = 0.743
-    *   FEVER: F1 = 0.814, Accuracy = 0.814
-    *   MultiNLI: F1 = 0.674
-    *   ANLI: F1 = 0.692
-    *   VitaminC: F1 = 0.596
+    ![metrics](https://github.com/MilyaushaShamsutdinova/AlignRuScore/blob/russian-adaptation/assets/metrics_3way.png?raw=true)
 *   **Binary Classification (Paraphrase, QA, IR, Document NLI):**
-    *   QQP: F1 = 0.768, ROC AUC = 0.879
-    *   DocNLI: F1 = 0.847, ROC AUC = 0.897
-    *   RuFact: F1 = 0.716, ROC AUC = 0.732
-    *   PAWS: F1 = 0.728
-    *   MS MARCO: F1 = 0.289 (Precision = 0.201, Recall = 0.520)
-    *   RACE: F1 = 0.400 (Precision = 0.250, Recall = 0.998)
+    ![metrics](https://github.com/MilyaushaShamsutdinova/AlignRuScore/blob/russian-adaptation/assets/metrics_bin.png?raw=true)
 
 ### Regression Tasks (Semantic Textual Similarity):
-*   SICK (translated): R² = 0.857, MSE = 0.228
-*   RuSTS Benchmark: R² = 0.557, MSE = 0.954
+
+![metrics](https://github.com/MilyaushaShamsutdinova/AlignRuScore/blob/russian-adaptation/assets/metrics_reg.png?raw=true)
 
 ### LLM Evaluation:
-AlignRuScore was used to evaluate outputs from Gemini 1.5 Flash on a subset of 200 samples from the IlyaGusev/gazeta summarization dataset, yielding an average factual-consistency score of **0.7285 ± 0.0639**.
+AlignRuScore was used to evaluate outputs from Gemini 1.5 Flash on a subset of 200 samples from the [IlyaGusev/gazeta](https://huggingface.co/datasets/IlyaGusev/gazeta) summarization dataset, yielding an average factual-consistency score of **0.7285 ± 0.0639**.
 
 These results demonstrate that a unified alignment metric can be successfully ported to Russian. Performance is strong in controlled entailment and paraphrase detection, with areas for improvement in open-domain QA and Russian STS.
 
 ## Released Assets
 
 *   **Code**: This GitHub repository.
-*   **Translated Datasets**: [MilyaShams/AlignScore_russian_datasets](https://huggingface.co/datasets/MilyaShams/AlignScore_russian_datasets)
+*   **Translated Datasets**: [MilyaShams/AlignScore_russian_datasets](https://huggingface.co/collections/MilyaShams/alignscore-russian-datasets-6801082af31d0a240e4b9bb5)
 *   **Model Checkpoint (RuBERT-base fine-tuned for AlignRuScore)**: [CatFr0g/ruAlignScore](https://huggingface.co/CatFr0g/ruAlignScore)
 
 ## Future Plans
