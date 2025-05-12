@@ -12,11 +12,16 @@ Ensuring factual consistency in generated text is crucial for reliable natural l
 
 AlignScore is a metric for evaluating the factual consistency of generated text by assessing the alignment of information between a claim and its context. It uses a unified text-to-text information alignment function, trained on a diverse set of data sources from various NLP tasks, to estimate an alignment score.
 
-![AlignScore Main Idea Diagram](https://github.com/MilyaushaShamsutdinova/AlignRuScore/blob/russian-adaptation/assets/alignscore_1.png?raw=true)
+<!-- ![AlignScore Main Idea Diagram](https://github.com/MilyaushaShamsutdinova/AlignRuScore/blob/russian-adaptation/assets/alignscore_1.png?raw=true) -->
+
+<img src="https://github.com/MilyaushaShamsutdinova/AlignRuScore/blob/russian-adaptation/assets/alignscore_1.png?raw=true" width="1000">
+
 
 AlignScore handles long texts by splitting the context into coarse-grained chunks (approx. 350 tokens) and the claim into fine-grained sentences. It then aggregates the alignment scores between context-chunks and claim-sentences to produce a final factual consistency score.
 
-![AlignScore Main Idea Diagram](https://github.com/MilyaushaShamsutdinova/AlignRuScore/blob/russian-adaptation/assets/alignscore_2.png?raw=true)
+<!-- ![AlignScore Main Idea Diagram](https://github.com/MilyaushaShamsutdinova/AlignRuScore/blob/russian-adaptation/assets/alignscore_2.png?raw=true) -->
+
+<img src="https://github.com/MilyaushaShamsutdinova/AlignRuScore/blob/russian-adaptation/assets/alignscore_2.png?raw=true" width="500">
 
 ## AlignRuScore: Methodology
 
