@@ -57,7 +57,7 @@ AlignRuScore was evaluated on held-out test portions of Russian datasets.
 
 ### Classification Tasks:
 *   **3-Way Classification (Entailment, Fact Verification):**
-    <!-- ![metrics](https://github.com/MilyaushaShamsutdinova/AlignRuScore/blob/russian-adaptation/assets/metrics_3way.png?raw=true) -->
+
     <img src="https://github.com/MilyaushaShamsutdinova/AlignRuScore/blob/russian-adaptation/assets/metrics_3way.png?raw=true" width="400">
 *   **Binary Classification (Paraphrase, QA, IR, Document NLI):**
     <!-- ![metrics](https://github.com/MilyaushaShamsutdinova/AlignRuScore/blob/russian-adaptation/assets/metrics_bin.png?raw=true) -->
