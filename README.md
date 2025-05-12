@@ -63,7 +63,7 @@ AlignRuScore was evaluated on held-out test portions of Russian datasets.
     <!-- ![metrics](https://github.com/MilyaushaShamsutdinova/AlignRuScore/blob/russian-adaptation/assets/metrics_bin.png?raw=true) -->
     <img src="https://github.com/MilyaushaShamsutdinova/AlignRuScore/blob/russian-adaptation/assets/metrics_bin.png?raw=true" width="400">
 
-### Regression Tasks (Semantic Textual Similarity):
+### Regression Tasks:
 
 <!-- ![metrics](https://github.com/MilyaushaShamsutdinova/AlignRuScore/blob/russian-adaptation/assets/metrics_reg.png?raw=true) -->
 <img src="https://github.com/MilyaushaShamsutdinova/AlignRuScore/blob/russian-adaptation/assets/metrics_reg.png?raw=true" width="200">
